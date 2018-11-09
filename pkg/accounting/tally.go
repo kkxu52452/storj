@@ -18,6 +18,7 @@ import (
 	"storj.io/storj/pkg/provider"
 	"storj.io/storj/pkg/utils"
 	"storj.io/storj/storage"
+	dbx "storj.io/storj/pkg/accounting/dbx"
 )
 
 // Tally is the service for adding up storage node data usage
@@ -26,12 +27,13 @@ type Tally interface {
 }
 
 type tally struct {
-	pointerdb *pointerdb.Server
-	overlay   pb.OverlayServer
-	kademlia  *kademlia.Kademlia
-	limit     int
-	logger    *zap.Logger
-	ticker    *time.Ticker
+	granularDB *dbx.DB
+	pointerdb  *pointerdb.Server
+	overlay    pb.OverlayServer
+	kademlia   *kademlia.Kademlia
+	limit      int
+	logger     *zap.Logger
+	ticker     *time.Ticker
 }
 
 func newTally(pointerdb *pointerdb.Server, overlay pb.OverlayServer, kademlia *kademlia.Kademlia, limit int, logger *zap.Logger, interval time.Duration) *tally {
