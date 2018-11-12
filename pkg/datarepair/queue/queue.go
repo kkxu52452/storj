@@ -5,6 +5,7 @@ package queue
 
 import (
 	"github.com/golang/protobuf/proto"
+	"go.uber.org/zap"
 	"storj.io/storj/pkg/pb"
 	"storj.io/storj/storage"
 )
@@ -22,6 +23,7 @@ type Queue struct {
 
 // NewQueue returns a pointer to a new Queue instance with an initialized connection to Redis
 func NewQueue(client storage.Queue) *Queue {
+	zap.L().Info("new data repair queue created")
 	return &Queue{db: client}
 }
 
