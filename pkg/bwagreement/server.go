@@ -7,7 +7,9 @@ import (
 	"context"
 	"crypto"
 	"crypto/ecdsa"
+	"fmt"
 	"sync"
+	"time"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/gtank/cryptopasta"
@@ -46,11 +48,34 @@ type Agreement struct {
 }
 
 // NewDBManager creates a new instance of a DatabaseManager
-func NewDBManager(driver, source string, logger *zap.Logger) (*DBManager, error) {
-	db, err := dbx.Open(driver, source)
+func NewDBManager(ctx context.Context, driver, source string, logger *zap.Logger) (*DBManager, error) {
+	var db *dbx.DB
+	var err error
+	// Attempt to connect to database a few times, backing off more each time
+	// there's a failure
+	for backoff := time.Second; backoff < 60*time.Second; backoff *= 2 {
+		db, err = dbx.Open(driver, source)
+		if err != nil {
+			logger.Warn("Error connecting to bwagreement database.",
+				zap.Error(err),
+				zap.Duration("backoff", backoff),
+			)
+			select {
+			case <-time.After(backoff):
+				continue
+			case <-ctx.Done():
+				return nil, fmt.Errorf("Cancelled before backoff time expired")
+			}
+		}
+	}
+
+	// If there's an error connecting to the database, fail here and return the
+	// error to the caller.
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Info("Connected to bwagreement database")
 
 	err = migrate.Create("bwagreement", db)
 	if err != nil {
@@ -63,9 +88,10 @@ func NewDBManager(driver, source string, logger *zap.Logger) (*DBManager, error)
 }
 
 // NewServer creates instance of Server
-func NewServer(driver, source string, logger *zap.Logger, pkey crypto.PublicKey) (*Server, error) {
-	dbm, err := NewDBManager(driver, source, logger)
+func NewServer(ctx context.Context, driver, source string, logger *zap.Logger, pkey crypto.PublicKey) (*Server, error) {
+	dbm, err := NewDBManager(ctx, driver, source, logger)
 	if err != nil {
+		// Can't start the database manager.
 		return nil, err
 	}
 

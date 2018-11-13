@@ -5,6 +5,7 @@ package bwagreement
 
 import (
 	"context"
+	"fmt"
 
 	"go.uber.org/zap"
 
@@ -29,9 +30,9 @@ func (c Config) Run(ctx context.Context, server *provider.Provider) (err error) 
 	defer mon.Task()(&ctx)(&err)
 	k := server.Identity().Leaf.PublicKey
 
-	ns, err := NewServer(c.DatabaseDriver, c.DatabaseURL, zap.L(), k)
+	ns, err := NewServer(ctx, c.DatabaseDriver, c.DatabaseURL, zap.L(), k)
 	if err != nil {
-		return err
+		return fmt.Errorf("Can't connect to the database for bwagreement: %s", err)
 	}
 
 	pb.RegisterBandwidthServer(server.GRPC(), ns)

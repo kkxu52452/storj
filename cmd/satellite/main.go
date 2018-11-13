@@ -153,7 +153,7 @@ func cmdSetup(cmd *cobra.Command, args []string) (err error) {
 func cmdDiag(cmd *cobra.Command, args []string) (err error) {
 	// open the psql db
 	dbpath := diagCfg.BasePath
-	dbm, err := bwagreement.NewDBManager("postgres", dbpath, zap.NewNop())
+	dbm, err := bwagreement.NewDBManager(context.Background(), "postgres", dbpath, zap.NewNop())
 	if err != nil {
 		return err
 	}
