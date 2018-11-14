@@ -51,17 +51,15 @@ var (
 	}
 
 	runCfg struct {
-		Identity  provider.IdentityConfig
-		Kademlia  kademlia.Config
-		PointerDB pointerdb.Config
-		// Checker     checker.Config
-		// Repairer    repairer.Config
-		Overlay     overlay.Config
-		MockOverlay mockOverlay.Config
-		StatDB      statdb.Config
-		// RepairQueue   queue.Config
-		// RepairChecker checker.Config
-		// Repairer      repairer.Config
+		Identity      provider.IdentityConfig
+		Kademlia      kademlia.Config
+		PointerDB     pointerdb.Config
+		Overlay       overlay.Config
+		MockOverlay   mockOverlay.Config
+		StatDB        statdb.Config
+		RepairQueue   queue.Config
+		RepairChecker checker.Config
+		Repairer      repairer.Config
 		// Audit audit.Config
 	}
 	setupCfg struct {
